@@ -8,7 +8,7 @@ from services.super_imposer import superimpose_with_resize
 from services.logo import paste_logo
 router = APIRouter()
 
-class Input(BaseModel):
+class input(BaseModel):
     image_str:str
     background_str:str = Field(None)
     logo_str:str=Field(None)
@@ -16,7 +16,7 @@ class Input(BaseModel):
 
 
 @router.post('/imageProcessing')
-def imageProcessing(Input:input):
+def imageProcessing(input:input):
     input_img_str = input.image_str
     input_img = base64_to_pil(input_img_str)
 
