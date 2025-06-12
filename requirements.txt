@@ -1,0 +1,8 @@
+fastapi
+pydantic
+python-dotenv
+uvicorn
+Pillow
+ultralytics
+onnxruntime
+Rembg
