@@ -34,4 +34,4 @@ def imageProcessing(input:input):
 
     output_img_str = pil_to_base64(output_img)
 
-    return JSONResponse(content={"output":output_img_str},status_code=201, media_type="application/json")
+    return JSONResponse(content={"processed":output_img_str},status_code=201, media_type="application/json")
