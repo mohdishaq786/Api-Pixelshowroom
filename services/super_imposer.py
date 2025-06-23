@@ -1,30 +1,32 @@
 from PIL import Image
 
-def superimpose_with_resize(background: Image.Image, overlay: Image.Image) -> Image.Image:
-    # Ensure both images have alpha channels
-    background = background.convert("RGBA")#.resize([3840, 720])
-    background.thumbnail([1920, 1080])
-    overlay = overlay.convert("RGBA")
-    overlay.thumbnail([1920, 1080])
+def superimpose_with_resize(background: Image.Image,
+                            overlay: Image.Image,
+                            overlay_area_ratio: float = 0.6) -> Image.Image:
+    bg = background.convert("RGBA")
+    ov = overlay.convert("RGBA")
 
-    # Get areas
-    bg_width, bg_height = background.size
-    ov_width, ov_height = overlay.size
+    # Downscale background if needed, using LANCZOS
+    bg.thumbnail((1920, 1080), resample=Image.Resampling.LANCZOS)
 
-    bg_area = bg_width * bg_height
-    ov_area = ov_width * ov_height
+    bg_w, bg_h = bg.size
+    target_area = overlay_area_ratio * (bg_w * bg_h)
 
-    # Check if overlay area > 50% of background
-    if ov_area > 0.5 * bg_area:
-        # Resize overlay to 25% of its original size
-        overlay = overlay.resize((ov_width // 2, ov_height // 2))
+    ov_w, ov_h = ov.size
+    scale = (target_area / (ov_w * ov_h)) ** 0.5
+    new_w = int(ov_w * scale)
+    new_h = int(ov_h * scale)
 
-    # Center the overlay on the background
-    ov_width, ov_height = overlay.size
-    position = ((bg_width - ov_width) // 2, (bg_height - ov_height) // 2)
+    # Clamp so it never exceeds background
+    max_scale = min(bg_w / ov_w, bg_h / ov_h)
+    if scale > max_scale:
+        new_w = int(ov_w * max_scale)
+        new_h = int(ov_h * max_scale)
 
-    # Paste the overlay
-    result = background.copy()
-    result.paste(overlay, position, overlay)
+    # **Here’s the key line**:
+    ov = ov.resize((new_w, new_h), resample=Image.Resampling.LANCZOS)
 
+    pos = ((bg_w - new_w) // 2, (bg_h - new_h) // 2)
+    result = bg.copy()
+    result.paste(ov, pos, ov)
     return result
